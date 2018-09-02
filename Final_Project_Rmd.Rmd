@@ -1,0 +1,98 @@
+---
+title: "Final Project"
+author: "Stat385 Team"
+date: "May 10, 2018"
+output: html_document
+---
+
+Topic: The analysis of the relashionship between number of passneger and 
+Airline,
+Region, 
+Price, 
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("shiny")
+library("ggplot2")
+library("dplyr")
+```
+
+Take a look at the dataset
+```{r}
+air_passenger = read.csv("Air_Traffic_Passenger_Statistics.csv")
+head(air_passenger)
+summary(air_passenger)
+
+```
+
+The number of the passenger VS. Region:
+
+```{r jj}
+#Each of the ggplot correspond to each tabPanel in mainPanel
+ggplot(air_passenger)+
+  geom_boxplot(aes(x = GEO.Region,y = Passenger.Count))
+
+```
+
+
+Averge passenger of every Published.Airline:
+
+```{r eval = T}
+#DATA Transformation
+passenger_count = air_passenger %>%
+  group_by(Published.Airline.IATA.Code) %>%
+  summarise(passenger = mean(Passenger.Count),
+            count = n())
+
+#DATA visulization
+ggplot(filter(passenger_count,count<4000),aes(x = count,y = passenger))+
+  geom_jitter()+
+  geom_smooth(se = F)
+```
+
+Domestic && International
+
+```{r}
+di = air_passenger %>%
+  group_by(GEO.Summary) %>%
+  summarise(passenger =sum(Passenger.Count),
+            count = n())
+
+print(di)
+
+ggplot(di)+
+  geom_bar(aes(x = GEO.Summary,y = passenger),stat = "identity")
+```
+
+Interesting conclusion: The number of airlines of international is twice of the domestic one，However the number passenger international is only 1/4 of the demostic`
+
+We guess this is because the international plane is not always full, since the size of international one is larger than demostic one`
+
+
+Number of passengers VS. Price:
+
+```{r}
+price = air_passenger %>%
+  group_by(Price.Category.Code) %>%
+  summarise(passenger =sum(Passenger.Count),
+            count = n())
+
+
+ggplot(price)+
+  geom_bar(aes(x = Price.Category.Code,y = passenger,fill = count),stat = "identity")
+```
+
+
+Simple Linear Regression model: Counting Passenger base on different factors. 
+
+```{r}
+lm(Passenger.Count~
+     Operating.Airline.IATA.Code + GEO.Summary + GEO.Region + Price.Category.Code,data = air_passenger)
+```
+
+
+
+
+
